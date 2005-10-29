@@ -1,0 +1,6 @@
+Revision history for Perl extension PDF::Table.
+
+0.01  Fri Oct 28 22:06:16 2005
+	- original version; created by h2xs 1.23 with options
+		-XA -n PDF::Table
+
