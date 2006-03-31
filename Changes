@@ -4,3 +4,5 @@ Revision history for Perl extension PDF::Table.
 	- original version; created by h2xs 1.23 with options
 		-XA -n PDF::Table
 
+0.02  Mar 30, 2006
+	- Bug fix for hash assignment warning. Reported by Christine Brennan.

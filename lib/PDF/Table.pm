@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 ############################################################
@@ -12,7 +12,7 @@ our $VERSION = '0.01';
 # new - Constructor
 #
 # Parameters are meta information about the PDF
-# 
+#
 # $pdf = PDF::Table->new();
 #
 ############################################################
@@ -47,19 +47,19 @@ sub new
 #
 ############################################################
 
-sub text_block 
+sub text_block
 	{
 	    my $self = shift;
 	    my $text_object = shift;
 	    my $text = shift;
 	    my %arg = @_;
-	    
-	    my($align,$width,$ypos,$xpos,$line_width,$wordspace, $endw) = (undef,undef,undef,undef,undef,undef,undef,undef);
-	    my @line = undef;
-	    my %width = undef;
+
+	    my($align,$ypos,$xpos,$line_width,$wordspace, $endw) = (undef,undef,undef,undef,undef,undef);
+	    my @line = ();
+	    my %width = ();
 	    # Get the text in paragraphs
 	    my @paragraphs = split(/\n/, $text);
-	
+
 		$arg{'-lead'} ||= 14;
 	    # calculate width of all words
 	    my $space_width = $text_object->advancewidth("\x20");
@@ -68,37 +68,37 @@ sub text_block
 		next if exists $width{$_};
 		$width{$_} = $text_object->advancewidth($_);
 	    }
-	
+
 	    $ypos = $arg{'-y'};
 	    my @paragraph = split(/ /, shift(@paragraphs));
 	    my $first_line = 1;
 	    my $first_paragraph = 1;
-	
+
 	    # while we can add another line
 	    while ( $ypos >= $arg{'-y'} - $arg{'-h'} + $arg{'-lead'} ) {
-		
+
 		unless (@paragraph) {
 		    last unless scalar @paragraphs;
 		    @paragraph = split(/ /, shift(@paragraphs));
-	
+
 		    $ypos -= $arg{'-parspace'} if $arg{'-parspace'};
 		    last unless $ypos >= $arg{'-y'} - $arg{'-h'};
 		    $first_line = 1;
 		    $first_paragraph = 0;
 		}
-		
+
 		$xpos = $arg{'-x'};
-		
+
 		# while there's room on the line, add another word
 		@line = ();
-	
+
 		$line_width =0;
 		if ($first_line && exists $arg{'-hang'}) {
 		    my $hang_width = $text_object->advancewidth($arg{'-hang'});
-	
+
 		    $text_object->translate( $xpos, $ypos );
 		    $text_object->text( $arg{'-hang'} );
-	
+
 		    $xpos         += $hang_width;
 		    $line_width   += $hang_width;
 		    $arg{'-indent'} += $hang_width if $first_paragraph;
@@ -115,8 +115,8 @@ sub text_block
 		    $xpos += $arg{'-indent'};
 		    $line_width += $arg{'-indent'};
 		}
-			
-				 
+
+
 		while ( @paragraph and $text_object->advancewidth(join("\x20", @line)."\x20".$paragraph[0])+$line_width < $arg{'-w'} ) {
 		    #$line_width += $width{ $paragraph[0] };
 		    push(@line, shift(@paragraph));
@@ -126,7 +126,7 @@ sub text_block
 		#    $line_width += $width{ $paragraph[0] };
 		#    push(@line, shift(@paragraph));
 		#}
-		
+
 		# calculate the space width
 		if ($arg{'-align'} eq 'fulljustify' or ($arg{'-align'} eq 'justify' and @paragraph)) {
 		    if (scalar(@line) == 1) {
@@ -139,8 +139,8 @@ sub text_block
 		    $wordspace = $space_width;
 		}
 		$line_width += $wordspace * (scalar(@line) - 1);
-		
-		
+
+
 		if ($align eq 'justify') {
 		    foreach my $word (@line) {
 			$text_object->translate( $xpos, $ypos );
@@ -149,18 +149,18 @@ sub text_block
 		    }
 		    $endw = $arg{'-w'};
 		} else {
-	    
+
 		    # calculate the left hand position of the line
 		    if ($align eq 'right') {
 			$xpos += $arg{'-w'} - $line_width;
 		    } elsif ($align eq 'center') {
 			$xpos += ($arg{'-w'}/2) - ($line_width / 2);
 		    }
-	    
+
 		    # render the line
 		    $text_object->translate( $xpos, $ypos );
 		    $endw = $text_object->text( join("\x20", @line));
-		}        
+		}
 		$ypos -= $arg{'-lead'};
 		$first_line = 0;
 	    }
@@ -185,10 +185,10 @@ sub text_block
 #   [-w        	=> $table_width,] # technically optional, but almost always a good idea to use
 #   [-row_height    	=> $min_row_height,] # minimum height of row
 #   [-padding    	=> $cellpadding,] # default 0,
-#   [-padding_left    	=> $leftpadding,] # overides -padding 
-#   [-padding_right    	=> $rightpadding,] # overides -padding 
-#   [-padding_top    	=> $toppadding,] # overides -padding 
-#   [-padding_bottom    => $bottompadding,] # overides -padding 
+#   [-padding_left    	=> $leftpadding,] # overides -padding
+#   [-padding_right    	=> $rightpadding,] # overides -padding
+#   [-padding_top    	=> $toppadding,] # overides -padding
+#   [-padding_bottom    => $bottompadding,] # overides -padding
 #   [-border     => $border width,] # default 1, use 0 for no border
 #   [-border_color     => $border_color,] # default black
 #   [-font    => $pdf->corefont,] # default $pdf->corefont('Times',-encode => 'latin1')
@@ -199,8 +199,8 @@ sub text_block
 #   [-background_color	=> 'gray',] # cell background color
 #   [-background_color_odd	=> $background_color_odd,] # cell background color for odd rows
 #   [-background_color_even	=> $background_color_even,] # cell background color for even rows
-# 	[-column_props    => [ 
-#		{width => $col_a_width, # width of column 
+# 	[-column_props    => [
+#		{width => $col_a_width, # width of column
 #		justify => 'left'|'right', # text justify in cell
 #		font => $pdf->corefont, # font for this column
 #		font_size => $col_a_font_size, # font size for this column
@@ -214,14 +214,14 @@ sub text_block
 #	# -All keys in the hashref are optional, with one caveat in the case of 'width'. See below.
 #	# -If used, there should be one hashref for each column, even if it is an empty hashref
 #	# -Column_props take precendence over general or odd/even row properties
-#	# -If using the 'width' property, it is required for all columns and the total of all column widths should 
-#	#  be equal to the -w parameter (overall table width). In other words, if you are going to set individual column widths, 
-#	#  set them accurately with respect to overall table width, otherwise behavior will be unpredictable. 
+#	# -If using the 'width' property, it is required for all columns and the total of all column widths should
+#	#  be equal to the -w parameter (overall table width). In other words, if you are going to set individual column widths,
+#	#  set them accurately with respect to overall table width, otherwise behavior will be unpredictable.
 #	#  This is a current limitation, not a feature :-)
 #);
 #
-############################################################	
-sub table 
+############################################################
+sub table
 	{
 	my $self = shift;
 	my $pdf = shift;
@@ -230,10 +230,10 @@ sub table
 	my %arg = @_;
 	my $txt = $page->text;
 	# set default properties
-	my $fnt_name = $arg{'-font'} || $pdf->corefont('Times',-encode => 'latin1'); 
+	my $fnt_name = $arg{'-font'} || $pdf->corefont('Times',-encode => 'latin1');
 	my $fnt_size = $arg{'-font-size'} || 12;
 	$txt->font($fnt_name,$fnt_size);
-	
+
 	my $lead = $arg{'-lead'} || $fnt_size;
 	my $pad_left = $arg{'-padding_left'} || $arg{'-padding'} || 0;
 	my $pad_right = $arg{'-padding_right'} || $arg{'-padding'} || 0;
@@ -251,7 +251,7 @@ sub table
 	my $pg_cnt = 1;
 	my $cur_y = $arg{'-start_y'};
 	if(ref $data){
-		
+
 		# determine column widths based on content
 		my $col_props =  $arg{'-column_props'} || []; # a arrayref whose values are a hashref holding the minimum and maximum width of that column
 		my $row_props = []; # an array ref of arrayrefs whose values are the actual widths of the column/row intersection
@@ -311,7 +311,7 @@ sub table
 		$width = $arg{'-w'} if $arg{'-w'};
 		my $border_color = $arg{-border_color} || 'black';
 		#my $line_w = 1;
-		
+
 		my $comp_cnt = 1;
 		my ($gfx,$gfx_bg,$background_color,$font_color);
 		my ($bot_marg, $table_top_y, $text_start, $record,$record_widths);
@@ -334,13 +334,13 @@ sub table
 			$gfx = $page->gfx;
 			$gfx->strokecolor($border_color);
 			$gfx->linewidth($line_w);
-			
+
 			#draw the top line
 			$cur_y = $table_top_y;
-			$gfx->move( $arg{'-x'},$cur_y);	
+			$gfx->move( $arg{'-x'},$cur_y);
 			$gfx->hline($arg{'-x'}+$width);
-			
-			 	
+
+
 			my $safety2 = 20;
 			# Each iteration adds a row to the current page until the page is full or there are no more rows to add
 			while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg){
@@ -348,12 +348,12 @@ sub table
 				$record = shift @{$data};
 				$record_widths = shift @$row_props;
 				next unless $record;
-				
+
 				# choose colors for this row
 				$background_color = $rcnt%2?$background_color_even:$background_color_odd;
 				$font_color = $rcnt%2?$font_color_even:$font_color_odd;
 				#$txt->fillcolor($font_color);
-			
+
 				$text_start = $cur_y-$fnt_size-$pad_top;
 				my $cur_x = $arg{'-x'};
 				my $leftovers = undef;
@@ -361,7 +361,7 @@ sub table
 				for(my $j =0;$j < scalar(@$record);$j++){
 					next unless $col_props->[$j]->{max_w};
 					$leftovers->[$j] = undef;
-					
+
 					# look for column properties that overide row properties
 					if($col_props->[$j]->{'font_color'}){
 						$txt->fillcolor($col_props->[$j]->{'font_color'});
@@ -390,7 +390,7 @@ sub table
 							-lead	  => $lead
 						);
 						#$lead is added here because $self->text_block returns the incorrect yposition - it is off by $lead
-						my $this_row_h = $cur_y - ($ypos_of_last_line +$lead-$pad_bot); 
+						my $this_row_h = $cur_y - ($ypos_of_last_line +$lead-$pad_bot);
 						$row_h = $this_row_h if $this_row_h > $row_h;
 						if($left_over_text){
 							$leftovers->[$j] = $left_over_text;
@@ -407,14 +407,14 @@ sub table
 						$txt->text($record->[$j]);
 					}
 
-					$cur_x += $col_widths->[$j];	
+					$cur_x += $col_widths->[$j];
 				}
 				if($do_leftovers){
 					unshift @$data, $leftovers;
 					unshift @$row_props, $record_widths;
 					$rcnt--;
 				}
-				
+
 				# draw cell bgcolor
 				# this has to be separately from the text loop because we do not know the finel height of the cell until all text has been drawn
 				if($background_color){
@@ -427,25 +427,25 @@ sub table
 						else{
 							$gfx_bg->fillcolor($background_color);
 						}
-						
+
 						$gfx_bg->fill();
-						$cur_x += $col_widths->[$j];	
+						$cur_x += $col_widths->[$j];
 					}
 				}
 
 				$cur_y -= $row_h;
 				$row_h = $min_row_h;
-				$gfx->move($arg{'-x'},$cur_y);	
+				$gfx->move($arg{'-x'},$cur_y);
 				$gfx->hline($arg{'-x'}+$width);
 				$rcnt++;
 			}
 			# draw vertical lines
-			$gfx->move($arg{'-x'},$table_top_y);	
+			$gfx->move($arg{'-x'},$table_top_y);
 			$gfx->vline($cur_y);
 			my $cur_x = $arg{'-x'};
 			for(my $j =0;$j < scalar(@$record);$j++){
 				$cur_x += $col_widths->[$j];
-				$gfx->move( $cur_x,$table_top_y);	
+				$gfx->move( $cur_x,$table_top_y);
 				$gfx->vline($cur_y);
 
 			}
@@ -459,16 +459,16 @@ sub table
 	return ($page,--$pg_cnt,$cur_y);
 	}
 
-	
-# calculate the column widths	
+
+# calculate the column widths
 sub col_widths{
 	my $self = shift;
 	my $col_props = shift;
 	my $max_width = shift;
 	my $min_width = shift;
-	my $avail_width = shift;	
-	
-	
+	my $avail_width = shift;
+
+
 	my$calc_widths;
 	my $colname;
 	my $total = 0;
@@ -484,7 +484,7 @@ sub col_widths{
 		elsif( !$avail_width || !$col_props->[$j]->{max_w}){
 			$calc_widths->[$j] = 	$col_props->[$j]->{max_w};
 		}
-		# if the available space is more than the max, grow each column proportionally 
+		# if the available space is more than the max, grow each column proportionally
 		elsif($avail_width > $max_width and $max_width > 0){
 			$calc_widths->[$j] = 	$col_props->[$j]->{max_w} * ($avail_width/$max_width);
 		}
@@ -508,7 +508,7 @@ __END__
 
 =head1 NAME
 
-PDF::Table - A utility class for building table layouts in a PDF::API2 object. 
+PDF::Table - A utility class for building table layouts in a PDF::API2 object.
 
 =head1 SYNOPSIS
 
@@ -542,10 +542,10 @@ PDF::Table - A utility class for building table layouts in a PDF::API2 object.
 	 -start_h => 300,
 	 -next_h => 500,
 	 # some optional params
-	 -w => 570, 
+	 -w => 570,
 	 -padding => 5,
-	 -padding_right => 10, 
-	 -background_color_odd => "gray", 
+	 -padding_right => 10,
+	 -background_color_odd => "gray",
 	 -background_color_even => "lightblue", #cell background color for even rows
   );
 
@@ -567,7 +567,7 @@ Returns an instance of the class. There are no parameters.
 
 =back
 
-=head2 table($pdf, $page_obj, $data, %opts) 
+=head2 table($pdf, $page_obj, $data, %opts)
 
 =over
 
@@ -596,9 +596,9 @@ Returns an instance of the class. There are no parameters.
 	 -next_h => $height_on_succeeding_pages,
 	 [-w  => 570,] # width of table. technically optional, but almost always a good idea to use
 	 [-padding => "5",] # cell padding
-	 [-padding_top => "10",] #top cell padding, overides -pad 
-	 [-padding_right  => "10",] #right cell padding, overides -pad 
-	 [-padding_left  => "10",] #left padding padding, overides -pad 
+	 [-padding_top => "10",] #top cell padding, overides -pad
+	 [-padding_right  => "10",] #right cell padding, overides -pad
+	 [-padding_left  => "10",] #left padding padding, overides -pad
 	 [-padding_bottom  => "10",] #bottom padding, overides -pad
 	 [-border  => 1,] # border width, default 1, use 0 for no border
 	 [-border_color => "red",] # default black
@@ -623,12 +623,12 @@ Returns an instance of the class. There are no parameters.
 
   $col_props = [
 	{
-		width => 100,  
+		width => 100,
 		justify => "[left|right|center]",
 		font => $pdf->corefont("Times", -encoding => "latin1"),
 		font_size => 10
 		font_color=> "red"
-		background_color => "yellow", 
+		background_color => "yellow",
 	},
 	# etc.
   ];
@@ -636,9 +636,9 @@ Returns an instance of the class. There are no parameters.
 =back
 
 =over
-	
- If the "width" parameter is used for -col_props, it should be specified for every column and the sum of these should be exacty equal to the -w parameter, otherwise Bad Things may happen. In cases of a conflict between column formatting and odd/even row formatting, the former will oeverride the latter.
-	
+
+ If the "width" parameter is used for -col_props, it should be specified for every column and the sum of these should be exactly equal to the -w parameter, otherwise Bad Things may happen. In cases of a conflict between column formatting and odd/even row formatting, the former will override the latter.
+
 
 =head2 text_block($txtobj,$string,-x => $x, -y => $y, -w => $width, -h => $height)
 
@@ -686,11 +686,11 @@ Daemmon Hughes
 
 =head1 VERSION
 
-0.01
+0.02
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 by Daemmon Hughes, portions Copyright 2004 Stone 
+Copyright (C) 2006 by Daemmon Hughes, portions Copyright 2004 Stone
 Environmental Inc. (www.stone-env.com) All Rights Reserved.
 
 This library is free software; you can redistribute it and/or modify
@@ -699,11 +699,11 @@ at your option, any later version of Perl 5 you may have available.
 
 =head1 PLUGS
 
-Much of the work on this module was sponsered by 
+Much of the work on this module was sponsered by
 Stone Environmental Inc. (www.stone-env.com).
 
-The text_block() method is a slightly modified copy of the one from 
-Rick Measham's PDF::API2 tutorial at 
+The text_block() method is a slightly modified copy of the one from
+Rick Measham's PDF::API2 tutorial at
 http://pdfapi2.sourceforge.net/cgi-bin/view/Main/YourFirstDocument
 
 =head1 SEE ALSO
