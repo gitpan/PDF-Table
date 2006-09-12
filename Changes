@@ -6,3 +6,6 @@ Revision history for Perl extension PDF::Table.
 
 0.02  Mar 30, 2006
 	- Bug fix for hash assignment warning. Reported by Christine Brennan.
+
+0.03  Sep 12, 2006
+	- Bug fix for not working -font-size parameter. Reported by Marsha

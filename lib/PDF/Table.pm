@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 
 ############################################################
@@ -231,7 +231,7 @@ sub table
 	my $txt = $page->text;
 	# set default properties
 	my $fnt_name = $arg{'-font'} || $pdf->corefont('Times',-encode => 'latin1');
-	my $fnt_size = $arg{'-font-size'} || 12;
+	my $fnt_size = $arg{'-font_size'} || 12;
 	$txt->font($fnt_name,$fnt_size);
 
 	my $lead = $arg{'-lead'} || $fnt_size;
@@ -686,12 +686,13 @@ Daemmon Hughes
 
 =head1 VERSION
 
-0.02
+0.03
 
 =head1 COPYRIGHT AND LICENSE
 
 Copyright (C) 2006 by Daemmon Hughes, portions Copyright 2004 Stone
 Environmental Inc. (www.stone-env.com) All Rights Reserved.
+Bug fix by Desislav Kamenov
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,
@@ -706,6 +707,7 @@ The text_block() method is a slightly modified copy of the one from
 Rick Measham's PDF::API2 tutorial at
 http://pdfapi2.sourceforge.net/cgi-bin/view/Main/YourFirstDocument
 
+Comming Soon new extended version.
 =head1 SEE ALSO
 
 L<PDF::API2>
