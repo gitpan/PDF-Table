@@ -1,11 +1,52 @@
 Revision history for Perl extension PDF::Table.
 
-0.01  Fri Oct 28 22:06:16 2005
+0.9  Thu Sep 14 18:02:26 2006
 	- original version; created by h2xs 1.23 with options
-		-XA -n PDF::Table
+		-XA -v 0.9 -n PDF::Table
 
-0.02  Mar 30, 2006
-	- Bug fix for hash assignment warning. Reported by Christine Brennan.
+Version 0.9
 
-0.03  Sep 12, 2006
-	- Bug fix for not working -font-size parameter. Reported by Marsha
+Fixed 'fontsize' bug at line 234 to font_size and parameter is working correctly
+
+Changed all parameters not to start with '-'
+So now '-start_h' becomes only 'start_h'
+
+Changed default font encoding form latin1 to UTF8
+
+Added Default Values for next_h next_y parameters
+
+Added Minimum value check for x y start_h start_y
+
+Optimization for min row height calculations
+
+Added 'new_page_func parameter'. This is should be a reference to function which is called every time when a new page needs to be created so the table can span.See online manual for more info how to use it.
+
+Added Check if any text in sub text_block before spliting the parameter.
+
+Fixed bug with infinite loop when spanning to a new page.
+
+Splitting long words to parts because of breaking table cels
+
+Parameter in text_block() 'parspace'  space before block start (paragraph).
+So the first line will start and height $ybase $parspace. So is every next paragraph into the block.
+
+Undocumented Parameter in text_block() 'indent'    indent of every line
+Undocumented Parameter in text_block() 'flindent'  indent of first line
+Undocumented Parameter in text_block() 'fpindent'  indent of first paragraph
+
+The Above parameters are excluding each other in the following order: parspace,flindent,fpindent,indent 
+The one that is found first and has valid value is beeing used
+
+Added Header Row support with repeat on every new page and different layout than the other rows
+
+Parameter 'w' for table is not optional any more (could change)
+
+Changed table width calculation and now module tries to use as much space as it is given but not more than it.
+
+Default values for many options
+
+Better source formatting
+
+Fixed incorect y position returned from text_block()
+
+Others that i dont remeber.

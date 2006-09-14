@@ -1,14 +1,19 @@
-PDF-Table version 0.03
-======================
+PDF-Table version 0.9
+=====================
+SOME NOTES
 
-This class is a utility for use with the PDF::API2 module from CPAN. 
-It can be used to display text data in a table layout within the PDF. 
-The text data must be in a 2d array (such as returned by a DBI 
-statement handle fetchall_arrayref() call). The PDF::Table will 
-automatically add as many new pages as necessary to display all of 
-the data. Various layout properties, such as font, font size, and 
-cell padding and background color can be specified for each column 
-and/or for even/odd rows. See the perldoc after installation.
+This module is intended for table generation using PDF::API2
+The current version is RC1 and I will apreciate any feedback.
+Developed and tested on i586 Linux SuSE 10.0 and perl, v5.8.7 built for i586-linux-thread-multi
+
+CHANGES
+
+Since version 0.02 there are many changes. 
+See the ChangeLog file or make a diff from the tools menu in CPAN
+
+CONTACTS 
+
+See http://search.cpan.org/~omega/
 
 INSTALLATION
 
@@ -23,15 +28,18 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
-  PDF::API2
+  blah blah blah
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2005 by Daemmon Hughes, portions Copyright 2004 Stone 
-Environmental Inc. (www.stone-env.com) All Rights Reserved.
+Put the correct copyright and licence information here.
+
+Copyright (C) 2006 by Daemmon Hughes
+
+Extended by Desislav Kamenov since version 0.02
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.4 or,
+it under the same terms as Perl itself, either Perl version 5.8.7 or,
 at your option, any later version of Perl 5 you may have available.
 
 

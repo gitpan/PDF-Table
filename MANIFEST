@@ -4,4 +4,3 @@ MANIFEST
 README
 t/PDF-Table.t
 lib/PDF/Table.pm
-META.yml                                 Module meta-data (added by MakeMaker)
