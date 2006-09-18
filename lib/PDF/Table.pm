@@ -3,7 +3,7 @@ package PDF::Table;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.9';
+our $VERSION = '0.9.1';
 
 
 ############################################################
@@ -419,7 +419,6 @@ sub table
 					unshift @$row_props	,$hrp			;
 					$first_row = 1; # Means YES
 				}
-				print "Created New Page\n";	#DEBUG
 			}
 
 			# Check for safety reasons
@@ -460,6 +459,10 @@ sub table
 				$background_color = $rows_counter % 2 ? $background_color_even	: $background_color_odd;
 				$font_color 	  = $rows_counter % 2 ? $font_color_even		: $font_color_odd;
 
+				if($first_row and ref $header_props)
+				{
+					$background_color = $header_props->{'bg_color'}
+				}
 				$text_start		 = $cur_y - $fnt_size - $pad_top;
 				my $cur_x		 = $xbase;
 				my $leftovers 	 = undef;	# Reference to text that is returned from textblock()
@@ -904,7 +907,7 @@ Desislav Kamenov
 
 =head1 VERSION
 
-0.9
+0.9.1
 
 =head1 COPYRIGHT AND LICENSE
 

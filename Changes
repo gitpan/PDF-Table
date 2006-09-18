@@ -4,8 +4,17 @@ Revision history for Perl extension PDF::Table.
 	- original version; created by h2xs 1.23 with options
 		-XA -v 0.9 -n PDF::Table
 
-Version 0.9
+Version 0.9.1 - 18.Sep.2006
+----------------------------
+Removed Debug Message "Created New Page"
 
+Fixed bug with not working header row bg_color parameter
+
+Thanks to Bodo Bauer for submiting the patch.
+
+
+Version 0.9 - 14.Sep.2006
+----------------------------
 Fixed 'fontsize' bug at line 234 to font_size and parameter is working correctly
 
 Changed all parameters not to start with '-'
