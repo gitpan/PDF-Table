@@ -3,7 +3,7 @@ package PDF::Table;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.9.1';
+our $VERSION = '0.91';
 
 
 ############################################################
@@ -907,7 +907,7 @@ Desislav Kamenov
 
 =head1 VERSION
 
-0.9.1
+0.91
 
 =head1 COPYRIGHT AND LICENSE
 

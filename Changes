@@ -4,7 +4,7 @@ Revision history for Perl extension PDF::Table.
 	- original version; created by h2xs 1.23 with options
 		-XA -v 0.9 -n PDF::Table
 
-Version 0.9.1 - 18.Sep.2006
+Version 0.91 - 18.Sep.2006
 ----------------------------
 Removed Debug Message "Created New Page"
 
