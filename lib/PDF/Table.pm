@@ -3,7 +3,7 @@ package PDF::Table;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.91';
+our $VERSION = '0.9.2';
 
 
 ############################################################
@@ -472,7 +472,7 @@ sub table
 				for( my $j = 0; $j < scalar( @$record); $j++ ) 
 				{
 					next unless $col_props->[$j]->{max_w};
-					next unless $col_props->[$j]->{min_w};	#ADDED by Desi
+					next unless $col_props->[$j]->{min_w};	
 					$leftovers->[$j] = undef;
 
 					# Choose font color
@@ -516,7 +516,7 @@ sub table
 					{
 						$txt->font( $fnt_name, $col_fnt_size); 
 					}
-					
+					#TODO: Implement Center text align
 					$col_props->[$j]->{justify} = $col_props->[$j]->{justify} || 'left';
 					# If the content is wider than the specified width, we need to add the text as a text block
 					if($record_widths->[$j] and ($record_widths->[$j] < $calc_column_widths->[$j]))
@@ -568,7 +568,7 @@ sub table
 					for(my $j =0;$j < scalar(@$record);$j++)
 					{
 						$gfx_bg->rect( $cur_x, $cur_y-$row_h, $calc_column_widths->[$j], $row_h);
-						if( $col_props->[$j]->{'background_color'} )
+						if( $col_props->[$j]->{'background_color'} and !$first_row)
 						{
 							$gfx_bg->fillcolor($col_props->[$j]->{'background_color'});
 						}
@@ -675,36 +675,42 @@ PDF::Table - A utility class for building table layouts in a PDF::API2 object.
 
  # some data to layout
  my $some_data =[
-	["1 Lorem ipsum dolor",
-	"Donec odio neque, faucibus vel",
-	"consequat quis, tincidunt vel, felis."],
-	["Nulla euismod sem eget neque.",
-	"Donec odio neque",
-	"Sed eu velit."],
-	... and so on
+    ["1 Lorem ipsum dolor",
+    "Donec odio neque, faucibus vel",
+    "consequat quis, tincidunt vel, felis."],
+    ["Nulla euismod sem eget neque.",
+    "Donec odio neque",
+    "Sed eu velit."],
+    #... and so on
  ];
 
+ $left_edge_of_table = 50;
  # build the table layout
  $pdftable->table(
-	 # required params
-	 $pdf,
-	 $page,
-	 $some_data,
-	 x => $left_edge_of_table,
-	 w => 570,
-	 start_y => 500,
-	 next_y  => 700,
-	 start_h => 300,
-	 next_h  => 500,
-	 # some optional params
-	 padding => 5,
-	 padding_right => 10,
-	 background_color_odd  => "gray",
-	 background_color_even => "lightblue", #cell background color for even rows
+     # required params
+     $pdf,
+     $page,
+     $some_data,
+     x => $left_edge_of_table,
+     w => 495,
+     start_y => 750,
+     next_y  => 700,
+     start_h => 300,
+     next_h  => 500,
+     # some optional params
+     padding => 5,
+     padding_right => 10,
+     background_color_odd  => "gray",
+     background_color_even => "lightblue", #cell background color for even rows
   );
 
  # do other stuff with $pdf
+ $pdf->saveas();
 ...
+
+=head1 EXAMPLE
+
+For a complete working example or initial script look into distribution`s 'examples' folder.
 
 
 =head1 DESCRIPTION
@@ -753,33 +759,33 @@ The third item is the y position of the table bottom.
 =item Example:
 
  ($end_page, $pages_spanned, $table_bot_y) = $pdftable->table(
-	 $pdf,               # A PDF::API2 instance
-	 $page_to_start_on,  # A PDF::API2::Page instance created with $page_to_start_on = $pdf->page(); 
-	 $data,              # 2D arrayref of text strings
-	 x  => $left_edge_of_table,	#X - coordinate of upper left corner
-	 w  => 570, # width of table.
-	 start_y => $initial_y_position_on_first_page,
-	 next_y  => $initial_y_position_on_every_new_page,
-	 start_h => $table_height_on_first_page,
-	 next_h  => $table_height_on_every_new_page,
-	 #OPTIONAL PARAMS BELOW
-	 max_word_length=> 20,   # add a space after every 20th symbol in long words like serial numbers
-	 padding        => 5,    # cell padding
-	 padding_top 	=> 10,   # top cell padding, overides -pad
-	 padding_right 	=> 10,   # right cell padding, overides -pad
-	 padding_left  	=> 10,   # left padding padding, overides -pad
-	 padding_bottom => 10,   # bottom padding, overides -pad
-	 border         => 1,    # border width, default 1, use 0 for no border
-	 border_color 	=> 'red',# default black
-	 font           => $pdf->corefont("Helvetica", -encoding => "utf8"), # default font
-	 font_size      => 12,
-	 font_color_odd => 'purple',
-	 font_color_even=> 'black',
-	 background_color_odd  => 'gray', 		#cell background color for odd rows
-	 background_color_even => 'lightblue', 	#cell background color for even rows
-	 new_page_func  => $code_ref  # see section TABLE SPANNING
-	 header_props   => $hdr_props # see section HEADER ROW PROPERTIES
-	 column_props   => $col_props # see section COLUMN PROPERTIES
+     $pdf,               # A PDF::API2 instance
+     $page_to_start_on,  # A PDF::API2::Page instance created with $page_to_start_on = $pdf->page(); 
+     $data,              # 2D arrayref of text strings
+     x  => $left_edge_of_table,    #X - coordinate of upper left corner
+     w  => 570, # width of table.
+     start_y => $initial_y_position_on_first_page,
+     next_y  => $initial_y_position_on_every_new_page,
+     start_h => $table_height_on_first_page,
+     next_h  => $table_height_on_every_new_page,
+     #OPTIONAL PARAMS BELOW
+     max_word_length=> 20,   # add a space after every 20th symbol in long words like serial numbers
+     padding        => 5,    # cell padding
+     padding_top    => 10,   # top cell padding, overides padding
+     padding_right  => 10,   # right cell padding, overides padding
+     padding_left   => 10,   # left cell padding, overides padding
+     padding_bottom => 10,   # bottom padding, overides -padding
+     border         => 1,    # border width, default 1, use 0 for no border
+     border_color   => 'red',# default black
+     font           => $pdf->corefont("Helvetica", -encoding => "utf8"), # default font
+     font_size      => 12,
+     font_color_odd => 'purple',
+     font_color_even=> 'black',
+     background_color_odd  => 'gray',         #cell background color for odd rows
+     background_color_even => 'lightblue',     #cell background color for even rows
+     new_page_func  => $code_ref,  # see section TABLE SPANNING
+     header_props   => $hdr_props, # see section HEADER ROW PROPERTIES
+     column_props   => $col_props, # see section COLUMN PROPERTIES
  )
 
 =back
@@ -794,43 +800,47 @@ Also as you can see there is no data variable for the content because the module
 
 =back
 
-	$hdr_props = 
-	{
-		# This param could be a pdf core font or user specified TTF.
-		#  See PDF::API2 FONT METHODS for more information
-		font       => $pdf->corefont("Times", -encoding => "utf8"),
-		font_size  => 10,
-		font_color => '#006666',
-		bg_color   => 'yellow',
-		repeat     => 1,	# 1/0 eq On/Off  if the header row should be repeated to every new page
-	};
+    $hdr_props = 
+    {
+        # This param could be a pdf core font or user specified TTF.
+        #  See PDF::API2 FONT METHODS for more information
+        font       => $pdf->corefont("Times", -encoding => "utf8"),
+        font_size  => 10,
+        font_color => '#006666',
+        bg_color   => 'yellow',
+        repeat     => 1,    # 1/0 eq On/Off  if the header row should be repeated to every new page
+    };
 
 =over
 
 =item COLUMN PROPERTIES
 
 If the 'column_props' parameter is used, it should be an arrayref of hashrefs, 
-with one hashref for each column of the table. 
-Each hashref can contain any of keys shown here:
+with one hashref for each column of the table. The columns are counted from left to right so the hash reference at $col_props[0] will hold properties for the first column from left to right. 
+If you DO NOT want to give properties for a column but to give for another just insert and empty hash reference into the array for the column that you want to skip. This will cause the counting to proceed as expected and the properties to be applyed at the right columns.
+
+Each hashref can contain any of the keys shown below:
 
 =back
 
   $col_props = [
-	{
-		width => 100,
-		justify => "[left|right|center]",
-		font => $pdf->corefont("Times", -encoding => "latin1"),
-		font_size => 10
-		font_color=> 'red'
-		background_color => '#FFFF00',
-	},
-	# etc.
+    {},# This is an empty hash so the next one will hold the properties for the second row from left to right.
+    {
+        min_w => 100,       # Minimum column width.
+        justify => 'right', # One of left|right ,
+        font => $pdf->corefont("Times", -encoding => "latin1"),
+        font_size => 10,
+        font_color=> 'blue',
+        background_color => '#FFFF00',
+    },
+    # etc.
   ];
 
 =over
 
-If the 'width' parameter is used for 'col_props', it should be specified for every column 
-and the sum of these should be exactly equal to the 'w' parameter, otherwise Bad Things may happen. 
+If the 'min_w' parameter is used for 'col_props', have in mind that it can be overwritten 
+by the calculated minimum cell witdh if the userdefined value is less that calculated.
+This is done for safety reasons. 
 In cases of a conflict between column formatting and odd/even row formatting, 
 the former will override the latter.
 
@@ -838,7 +848,7 @@ the former will override the latter.
 
 =over
 
-=item TABLE SPANNING	
+=item TABLE SPANNING    
 
 If used the parameter 'new_page_func' must be a function reference which when executed will create a new page and will return the object back to the module.
 For example you can use it to put Page Title, Page Frame, Page Numbers and other staff that you need.
@@ -852,6 +862,7 @@ Dont forget that your function must return a page object created with PDF::API2 
 =over
 
 Utility method to create a block of text. The block may contain multiple paragraphs.
+It is mainly used internaly but you can use it from outside for placing formated text anywhere on the sheet.
 
 =back
 
@@ -872,14 +883,14 @@ Utility method to create a block of text. The block may contain multiple paragra
 =over
 
  ($width_of_last_line, $ypos_of_last_line, $left_over_text) = text_block(
-   $text_handler_from_page,
+    $txt,
     $text_to_place,
-	#X,Y - coordinates of upper left corner
+    #X,Y - coordinates of upper left corner
     x        => $left_edge_of_block,
     y        => $y_position_of_first_line,
     w        => $width_of_block,
     h        => $height_of_block,
-	#OPTIONAL PARAMS
+    #OPTIONAL PARAMS
     lead     => $font_size | $distance_between_lines,
     align    => "left|right|center|justify|fulljustify",
     hang     => $optional_hanging_indent,
@@ -907,7 +918,7 @@ Desislav Kamenov
 
 =head1 VERSION
 
-0.91
+0.9.2
 
 =head1 COPYRIGHT AND LICENSE
 

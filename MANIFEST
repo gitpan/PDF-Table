@@ -4,3 +4,4 @@ MANIFEST
 README
 t/PDF-Table.t
 lib/PDF/Table.pm
+examples/pdf_table_test.pl

@@ -4,7 +4,20 @@ Revision history for Perl extension PDF::Table.
 	- original version; created by h2xs 1.23 with options
 		-XA -v 0.9 -n PDF::Table
 
-Version 0.91 - 18.Sep.2006
+Version 0.9.2 - 02.Oct.2006
+----------------------------
+Fixed bug with 'col_props->bg_color' overiding 'header_props->bg_color'
+Reported by Giulio
+
+Fixed some documentation inacuracys.
+Added some new documentation.
+
+'column_props->width' parameter changed to 'min_w'
+
+Added example script to instantly test the module when downloaded.
+See 'examples' into the tar.gz archive.
+
+Version 0.9.1 - 18.Sep.2006
 ----------------------------
 Removed Debug Message "Created New Page"
 
