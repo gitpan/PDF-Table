@@ -3,7 +3,7 @@ package PDF::Table;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.9.2';
+our $VERSION = '0.9.3';
 
 
 ############################################################
@@ -43,6 +43,18 @@ sub text_block
 		( undef , undef, undef, undef , undef , undef      , undef     , undef , undef , undef  );
     my @line 		= ();		# Temp data array with words on one line 
     my %width 		= ();		# The width of every unique word in the givven text
+
+	# Try to provide backward compatibility
+	foreach my $key (keys %arg)
+	{
+		my $newkey = $key;
+		if($newkey =~ s#^-##)
+		{
+			$arg{$newkey} = $arg{$key};
+			delete $arg{$key};
+		}
+	}
+	#####
 
 	#---
 	# Lets check mandatory parameters with no default values
@@ -85,6 +97,7 @@ sub text_block
 	# Little Init
 	$xpos = $xbase;
 	$ypos = $ybase;
+	$ypos = $ybase + $line_space;
 	my $bottom_border = $ybase - $height; 
     # While we can add another line
     while ( $ypos >= $bottom_border + $line_space ) 
@@ -99,10 +112,8 @@ sub text_block
 
 	    	$ypos -= $arg{'parspace'} if $arg{'parspace'};
 	    	last unless $ypos >= $bottom_border;
-	    	$first_line = 1;
-	    	$first_paragraph = 0;
 		}
-		$ypos -= $line_space unless($first_line);
+		$ypos -= $line_space;
 		$xpos = $xbase;
 
 		# While there's room on the line, add another word
@@ -209,6 +220,18 @@ sub table
 		print "Error: Mandatory parameter is missing pdf/page/data object!\n";
 		return;
 	}
+	# Try to provide backward compatibility
+	foreach my $key (keys %arg)
+	{
+		my $newkey = $key;
+		if($newkey =~ s#^-##)
+		{
+			$arg{$newkey} = $arg{$key};
+			delete $arg{$key};
+		}
+	}
+	#TODO: Add code for header props compatibility and col_props comp....
+	#####
 	my ( $xbase, $ybase, $width, $height ) = ( undef, undef, undef, undef );
 	# Could be 'int' or 'real' values
 	$xbase 	= $arg{'x'		} || -1;	
@@ -279,6 +302,8 @@ sub table
 
 	my $pg_cnt 		= 1;
 	my $cur_y 		= $ybase;
+	my $cell_props	= $arg{cell_props} || [];   # per cell properties
+	my $row_cnt		= ( ref $header_props and $header_props->{'repeat'} ) ?  1 : 0; # current row in user data
 
 	#If there is valid data array reference use it!
 	if(ref $data eq 'ARRAY')
@@ -480,6 +505,10 @@ sub table
                     {   
 						$txt->fillcolor( $header_props->{'font_color'} ); 
 					}	
+					elsif( $cell_props->[$row_cnt][$j]{font_color} )
+					{
+						$txt->fillcolor( $cell_props->[$row_cnt][$j]{font_color} );
+					}
 					elsif( $col_props->[$j]->{'font_color'} )
 					{ 
 						$txt->fillcolor( $col_props->[$j]->{'font_color'} ); 
@@ -519,7 +548,7 @@ sub table
 					#TODO: Implement Center text align
 					$col_props->[$j]->{justify} = $col_props->[$j]->{justify} || 'left';
 					# If the content is wider than the specified width, we need to add the text as a text block
-					if($record_widths->[$j] and ($record_widths->[$j] < $calc_column_widths->[$j]))
+					if($record->[$j] !~ m#(.\n.)# and  $record_widths->[$j] and ($record_widths->[$j] < $calc_column_widths->[$j]))
 					{
 						my $space = $pad_left;
 						if($col_props->[$j]->{justify} eq 'right')
@@ -562,31 +591,37 @@ sub table
 				# Draw cell bgcolor
 				# This has to be separately from the text loop 
 				#  because we do not know the final height of the cell until all text has been drawn
-				if($background_color)
+				$cur_x = $xbase;
+				for(my $j =0;$j < scalar(@$record);$j++)
 				{
-					$cur_x = $xbase;
-					for(my $j =0;$j < scalar(@$record);$j++)
+					if ( 	$cell_props->[$row_cnt][$j]->{'background_color'} || 
+							$col_props->[$j]->{'background_color'} || 
+							$background_color ) 
 					{
 						$gfx_bg->rect( $cur_x, $cur_y-$row_h, $calc_column_widths->[$j], $row_h);
-						if( $col_props->[$j]->{'background_color'} and !$first_row)
+						if ( $cell_props->[$row_cnt][$j]->{'background_color'} && !$first_row )
 						{
-							$gfx_bg->fillcolor($col_props->[$j]->{'background_color'});
+						    $gfx_bg->fillcolor($cell_props->[$row_cnt][$j]->{'background_color'});
+						}
+						elsif( $col_props->[$j]->{'background_color'} && !$first_row  )
+						{
+						    $gfx_bg->fillcolor($col_props->[$j]->{'background_color'});
 						}
 						else
 						{
-							$gfx_bg->fillcolor($background_color);
+						    $gfx_bg->fillcolor($background_color);
 						}
-
 						$gfx_bg->fill();
-						$cur_x += $calc_column_widths->[$j];
-					}#End of for(my $j....
-				}#End of if($background_color)
+					}
+					$cur_x += $calc_column_widths->[$j];
+				}#End of for(my $j....
 
 				$cur_y -= $row_h;
 				$row_h  = $min_row_h;
 				$gfx->move(  $xbase , $cur_y );
 				$gfx->hline( $xbase + $width );
 				$rows_counter++;
+				$row_cnt++ unless ( $first_row );
 				$first_row = 0;
 			}# End of while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
 
@@ -786,6 +821,7 @@ The third item is the y position of the table bottom.
      new_page_func  => $code_ref,  # see section TABLE SPANNING
      header_props   => $hdr_props, # see section HEADER ROW PROPERTIES
      column_props   => $col_props, # see section COLUMN PROPERTIES
+     cell_props     => $row_props, # see section CELL PROPERTIES
  )
 
 =back
@@ -848,6 +884,47 @@ the former will override the latter.
 
 =over
 
+=item CELL PROPERTIES
+
+If the 'cell_props' parameter is used, it should be an arrayref with arrays of hashrefs
+(of the same dimension as the data array) with one hashref for each cell of the table.
+Each hashref can contain any of keys shown here:
+
+=back
+
+  $cell_props = [
+    [ #This array is for the first row. If header_props is defined it will overwrite this settings.
+      {#Row 1 cell 1
+        background_color => '#AAAA00',
+        font_color       => 'blue',
+      },
+      # etc.
+    ],
+    [ #Row 2
+      {#Row 2 cell 1
+        background_color => '#CCCC00',
+        font_color       => 'blue',
+      },
+      {#Row 2 cell 2
+        background_color => '#CCCC00',
+        font_color       => 'blue',
+      },
+      # etc.
+    ],
+	# etc.
+  ];
+
+=over
+
+In case of a conflict between column, odd/even and cell formating, cell formating will overwrite the other two.
+In case of a conflict between header row cell formating, header formating will win.
+
+=back
+
+=over
+
+
+
 =item TABLE SPANNING    
 
 If used the parameter 'new_page_func' must be a function reference which when executed will create a new page and will return the object back to the module.
@@ -882,7 +959,7 @@ It is mainly used internaly but you can use it from outside for placing formated
 
 =over
 
- ($width_of_last_line, $ypos_of_last_line, $left_over_text) = text_block(
+ ($width_of_last_line, $ypos_of_last_line, $left_over_text) = $pdftable->text_block(
     $txt,
     $text_to_place,
     #X,Y - coordinates of upper left corner
@@ -918,7 +995,7 @@ Desislav Kamenov
 
 =head1 VERSION
 
-0.9.2
+0.9.3
 
 =head1 COPYRIGHT AND LICENSE
 
