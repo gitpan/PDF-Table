@@ -5,3 +5,5 @@ README
 t/PDF-Table.t
 lib/PDF/Table.pm
 examples/sample1.pl
+examples/table_of_lorem.pdf
+META.yml                                 Module meta-data (added by MakeMaker)

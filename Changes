@@ -1,5 +1,37 @@
 Revision history for Perl extension PDF::Table.
 
+Version 0.9.4 - 17.Oct.2011
+----------------------------
+Don't bump row count when row spans a page.  Closes #67401.
+
+Fixed bug: don't call text_block if record width is exactly cell width.
+
+Fixed bug in text_block: bottom is (top - height), not (baseline - height).
+
+Example script typo fixed.  Closes #55133.
+
+Don't set up strokes when border is 0.  Apparently breaks Acrobat.
+Closes #40705 and #55137.
+
+Changed print warnings to carp.  Closes #38007.
+
+Added center justification for columns and cells.  Tests, too.
+Closes #37924.
+
+Fixed infinite loop caused by uninitialized $2.  Thanks to Petri Kaurinkoski.
+Closes #34017.
+
+Fixed perl warning if $col_prop->{min_w} is undef.  Thanks to
+Matthias Pitzl (NEPOS).  Closes #30720.
+
+Fixed default header background color bug, closes #28542.
+
+Added mock PDF::API2 packages to test script and added tests.
+
+Improve column width calculations so wider content gets wider columns.
+Added column width test.  Thanks to Barrie Slaymaker (RBS).  Closes #26158.
+
+
 Version 0.9.3 - 27.12.2006
 ----------------------------
 Added backward compatibility and now again params with '-' front are supported.

@@ -4,7 +4,7 @@ use strict;
 use diagnostics;
 #Please use TABSTOP=4 for best view
  use PDF::API2;
- use Table;
+ use PDF::Table;
 
  my $pdftable = new PDF::Table;
  my $pdf = new PDF::API2(-file => "table_of_lorem.pdf");

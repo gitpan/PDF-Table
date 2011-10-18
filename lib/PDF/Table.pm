@@ -3,7 +3,8 @@ package PDF::Table;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.9.3';
+use Carp;
+our $VERSION = '0.9.4';
 
 
 ############################################################
@@ -63,14 +64,14 @@ sub text_block
 	$ybase 	= $arg{'y'} || -1;
 	$width 	= $arg{'w'} || -1;
 	$height	= $arg{'h'} || -1;
-	unless( $xbase  > 0 ){ print "Error: Left Edge of Block is NOT defined!\n";	return; }
-	unless( $ybase  > 0 ){ print "Error: Base Line of Block is NOT defined!\n"; return; }
-	unless( $width  > 0 ){ print "Error: Width of Block is NOT defined!\n"; 	return; }
-	unless( $height > 0 ){ print "Error: Height of Block is NOT defined!\n";	return;	}
+	unless( $xbase  > 0 ){ carp "Error: Left Edge of Block is NOT defined!\n";	return; }
+	unless( $ybase  > 0 ){ carp "Error: Base Line of Block is NOT defined!\n"; return; }
+	unless( $width  > 0 ){ carp "Error: Width of Block is NOT defined!\n"; 	return; }
+	unless( $height > 0 ){ carp "Error: Height of Block is NOT defined!\n";	return;	}
 	# Check if any text to display
 	unless( defined( $text) and length($text) > 0 )
 	{
-		print "Warning: No input text found. Trying to add dummy '-' and not to break everything.\n";
+		carp "Warning: No input text found. Trying to add dummy '-' and not to break everything.\n";
 		$text = '-';
 	}
 
@@ -98,7 +99,7 @@ sub text_block
 	$xpos = $xbase;
 	$ypos = $ybase;
 	$ypos = $ybase + $line_space;
-	my $bottom_border = $ybase - $height; 
+	my $bottom_border = $ypos - $height; 
     # While we can add another line
     while ( $ypos >= $bottom_border + $line_space ) 
 	{
@@ -217,7 +218,7 @@ sub table
 	#=====================================
 	unless($pdf and $page and $data)
 	{
-		print "Error: Mandatory parameter is missing pdf/page/data object!\n";
+		carp "Error: Mandatory parameter is missing pdf/page/data object!\n";
 		return;
 	}
 	# Try to provide backward compatibility
@@ -240,10 +241,10 @@ sub table
 	$height	= $arg{'start_h'} || -1;
 
 	# Global geometry parameters are also mandatory. 
-	unless( $xbase	> 0 ){ print "Error: Left Edge of Table is NOT defined!\n";	return; }
-	unless( $ybase	> 0 ){ print "Error: Base Line of Table is NOT defined!\n"; return; }
-	unless( $width	> 0 ){ print "Error: Width of Table is NOT defined!\n"; 	return; }
-	unless( $height	> 0 ){ print "Error: Height of Table is NOT defined!\n";	return;	}
+	unless( $xbase	> 0 ){ carp "Error: Left Edge of Table is NOT defined!\n";	return; }
+	unless( $ybase	> 0 ){ carp "Error: Base Line of Table is NOT defined!\n"; return; }
+	unless( $width	> 0 ){ carp "Error: Width of Table is NOT defined!\n"; 	return; }
+	unless( $height	> 0 ){ carp "Error: Height of Table is NOT defined!\n";	return;	}
 
 	# Ensure default values for -next_y and -next_h
 	my $next_y	= $arg{'next_y'} || $arg{'start_y'} || 0;
@@ -352,14 +353,7 @@ sub table
 				}
 
 				# This should fix a bug with very long word like serial numbers etc.
-				# $myone is used because $1 gets out of scope in while condition
-				my $myone;
-				do{
-			    	$myone = 0;
-					# This RegEx will split any word that is longer than {25} symbols
-					$row->[$j] =~ s#(\b\S{$max_word_len}?)(\S.*?\b)# $1 $2#;
-					$myone = 1 if( defined $2 );
-				}while( $myone );
+				#$row->[$j] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g if ($max_word_len > 0);
 
 				$space_w 				= $txt->advancewidth( "\x20" );
 				$column_widths->[$j] 	= 0;
@@ -402,7 +396,7 @@ sub table
 		}
 		# Calc real column widths and expand table width if needed.
 		my $calc_column_widths; 
-		($calc_column_widths, $width) = $self->CalcColumnWidths( $col_props, $width );
+		($calc_column_widths, $width) = CalcColumnWidths( $col_props, $width );
 
 		my $comp_cnt 	 = 1;
 		$rows_counter	 = 0;
@@ -449,21 +443,30 @@ sub table
 			# Check for safety reasons
 			if( $bot_marg < 0 )
 			{	# This warning should remain i think
-				print "!!! Warning: !!! Incorrect Table Geometry! Setting bottom margin to end of sheet!\n";
+				carp "!!! Warning: !!! Incorrect Table Geometry! Setting bottom margin to end of sheet!\n";
 				$bot_marg = 0;
 			}
 
 			$gfx_bg = $page->gfx;
 			$txt = $page->text;
 			$txt->font($fnt_name, $fnt_size); 
-			$gfx = $page->gfx;
-			$gfx->strokecolor($border_color);
-			$gfx->linewidth($line_w);
 
-			# Draw the top line
 			$cur_y = $table_top_y;
-			$gfx->move( $xbase , $cur_y );
-			$gfx->hline($xbase + $width );
+
+			if ($line_w)
+			{
+				$gfx = $page->gfx;
+				$gfx->strokecolor($border_color);
+				$gfx->linewidth($line_w);
+
+				# Draw the top line
+				$gfx->move( $xbase , $cur_y );
+				$gfx->hline($xbase + $width );
+			}
+			else
+			{
+				$gfx = undef;
+			}
 
 			# Each iteration adds a row to the current page until the page is full 
 			#  or there are no more rows to add
@@ -484,10 +487,6 @@ sub table
 				$background_color = $rows_counter % 2 ? $background_color_even	: $background_color_odd;
 				$font_color 	  = $rows_counter % 2 ? $font_color_even		: $font_color_odd;
 
-				if($first_row and ref $header_props)
-				{
-					$background_color = $header_props->{'bg_color'}
-				}
 				$text_start		 = $cur_y - $fnt_size - $pad_top;
 				my $cur_x		 = $xbase;
 				my $leftovers 	 = undef;	# Reference to text that is returned from textblock()
@@ -502,7 +501,7 @@ sub table
 
 					# Choose font color
 					if( $first_row and ref $header_props )
-                    {   
+					{   
 						$txt->fillcolor( $header_props->{'font_color'} ); 
 					}	
 					elsif( $cell_props->[$row_cnt][$j]{font_color} )
@@ -545,15 +544,19 @@ sub table
 					{
 						$txt->font( $fnt_name, $col_fnt_size); 
 					}
-					#TODO: Implement Center text align
-					$col_props->[$j]->{justify} = $col_props->[$j]->{justify} || 'left';
+
+					my $justify = $cell_props->[$row_cnt][$j]->{'justify'} || $col_props->[$j]->{'justify'} || 'left';
 					# If the content is wider than the specified width, we need to add the text as a text block
-					if($record->[$j] !~ m#(.\n.)# and  $record_widths->[$j] and ($record_widths->[$j] < $calc_column_widths->[$j]))
+					if($record->[$j] !~ m#(.\n.)# and  $record_widths->[$j] and ($record_widths->[$j] <= $calc_column_widths->[$j]))
 					{
 						my $space = $pad_left;
-						if($col_props->[$j]->{justify} eq 'right')
+						if ($justify eq 'right')
 						{
 							$space = $calc_column_widths->[$j] -($txt->advancewidth($record->[$j]) + $pad_right);
+						}
+						elsif ($justify eq 'center')
+						{
+							$space = ($calc_column_widths->[$j] - $txt->advancewidth($record->[$j])) / 2;
 						}
 						$txt->translate( $cur_x + $space, $text_start );
 						$txt->text( $record->[$j] );
@@ -568,7 +571,7 @@ sub table
 						    y        => $text_start,
 						    w        => $calc_column_widths->[$j] - $pad_w,
 							h		 => $cur_y - $bot_marg - $pad_top - $pad_bot,
-							align    => $col_props->[$j]->{justify},
+							align    => $justify,
 							lead	 => $lead
 						);
 						# Desi - Removed $lead because of fixed incorrect ypos bug in text_block
@@ -594,23 +597,26 @@ sub table
 				$cur_x = $xbase;
 				for(my $j =0;$j < scalar(@$record);$j++)
 				{
-					if ( 	$cell_props->[$row_cnt][$j]->{'background_color'} || 
-							$col_props->[$j]->{'background_color'} || 
-							$background_color ) 
+					my $bg_color;
+					if ( $first_row && ref $header_props ){
+						$bg_color = $header_props->{'bg_color'};
+					}
+					elsif ( $cell_props->[$row_cnt][$j]->{'background_color'})
+					{
+						$bg_color = $cell_props->[$row_cnt][$j]->{'background_color'};
+					}
+					elsif( $col_props->[$j]->{'background_color'})
+					{
+						$bg_color = $col_props->[$j]->{'background_color'};
+					}
+					else
+					{
+						$bg_color = $background_color;
+					}
+					if ($bg_color)
 					{
 						$gfx_bg->rect( $cur_x, $cur_y-$row_h, $calc_column_widths->[$j], $row_h);
-						if ( $cell_props->[$row_cnt][$j]->{'background_color'} && !$first_row )
-						{
-						    $gfx_bg->fillcolor($cell_props->[$row_cnt][$j]->{'background_color'});
-						}
-						elsif( $col_props->[$j]->{'background_color'} && !$first_row  )
-						{
-						    $gfx_bg->fillcolor($col_props->[$j]->{'background_color'});
-						}
-						else
-						{
-						    $gfx_bg->fillcolor($background_color);
-						}
+						$gfx_bg->fillcolor($bg_color);
 						$gfx_bg->fill();
 					}
 					$cur_x += $calc_column_widths->[$j];
@@ -618,27 +624,32 @@ sub table
 
 				$cur_y -= $row_h;
 				$row_h  = $min_row_h;
-				$gfx->move(  $xbase , $cur_y );
-				$gfx->hline( $xbase + $width );
+				if ($gfx)
+				{
+					$gfx->move(  $xbase , $cur_y );
+					$gfx->hline( $xbase + $width );
+				}
 				$rows_counter++;
-				$row_cnt++ unless ( $first_row );
+				$row_cnt++ unless ( $first_row || $do_leftovers );
 				$first_row = 0;
 			}# End of while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
 
-			# Draw vertical lines
-			$gfx->move(  $xbase, $table_top_y);
-			$gfx->vline( $cur_y );
-			my $cur_x = $xbase;
-			for( my $j = 0; $j < scalar(@$record); $j++ )
+			if ($gfx)
 			{
-				$cur_x += $calc_column_widths->[$j];
-				$gfx->move(  $cur_x, $table_top_y );
+				# Draw vertical lines
+				$gfx->move(  $xbase, $table_top_y);
 				$gfx->vline( $cur_y );
-
+				my $cur_x = $xbase;
+				for( my $j = 0; $j < scalar(@$record); $j++ )
+				{
+					$cur_x += $calc_column_widths->[$j];
+					$gfx->move(  $cur_x, $table_top_y );
+					$gfx->vline( $cur_y );
+				}
+				# ACTUALLY draw all the lines
+				$gfx->fillcolor( $border_color);
+				$gfx->stroke;
 			}
-			# ACTUALLY draw all the lines
-			$gfx->fillcolor( $border_color);
-			$gfx->stroke if $line_w;
 			$pg_cnt++;
 		}# End of while(scalar(@{$data}))
 	}# End of if(ref $data eq 'ARRAY')
@@ -650,7 +661,6 @@ sub table
 # calculate the column widths
 sub CalcColumnWidths
 {
-	my $self 		= shift;
 	my $col_props 	= shift;
 	my $avail_width = shift;
 	my $min_width 	= 0;
@@ -659,13 +669,13 @@ sub CalcColumnWidths
 
 	for(my $j = 0; $j < scalar( @$col_props); $j++)
 	{
-		$min_width += $col_props->[$j]->{min_w};
+		$min_width += $col_props->[$j]->{min_w} || 0;
 	}
 
 	# I think this is the optimal variant when good view can be guaranateed
 	if($avail_width < $min_width)
 	{
-		print "!!! Warning !!!\n Calculated Mininal width($min_width) > Table width($avail_width).\n",
+		carp "!!! Warning !!!\n Calculated Mininal width($min_width) > Table width($avail_width).\n",
 			' Expanding table width to:',int($min_width)+1,' but this could lead to unexpected results.',"\n",
 			' Possible solutions:',"\n",
 			'  0)Increase table width.',"\n",
@@ -679,12 +689,38 @@ sub CalcColumnWidths
 
 	}
 
-	my $span = 0;
-	# Calculate how much can be added to every column to fit the available width
-	$span = ($avail_width - $min_width) / scalar( @$col_props);
+	# Calculate how much can be added to every column to fit the available width.
 	for(my $j = 0; $j < scalar(@$col_props); $j++ )
 	{
-		$calc_widths->[$j] = $col_props->[$j]->{min_w} + $span;
+		$calc_widths->[$j] = $col_props->[$j]->{min_w} || 0;;
+	}
+
+	# Allow columns to expand to max_w before applying extra space equally.
+	my $is_last_iter;
+	for (;;)
+	{
+		my $span = ($avail_width - $min_width) / scalar( @$col_props);
+		last if $span <= 0;
+
+		$min_width = 0;
+		my $next_will_be_last_iter = 1;
+		for(my $j = 0; $j < scalar(@$col_props); $j++ )
+		{
+			my $new_w = $calc_widths->[$j] + $span;
+
+			if (!$is_last_iter && $new_w > $col_props->[$j]->{max_w})
+			{
+				$new_w = $col_props->[$j]->{max_w}
+			}
+			if ($calc_widths->[$j] != $new_w )
+			{
+				$calc_widths->[$j] = $new_w;
+				$next_will_be_last_iter = 0;
+			}
+			$min_width += $new_w;
+		}
+		last if $is_last_iter;
+		$is_last_iter = $next_will_be_last_iter;
 	}
 
 	return ($calc_widths,$avail_width);
@@ -863,7 +899,8 @@ Each hashref can contain any of the keys shown below:
     {},# This is an empty hash so the next one will hold the properties for the second row from left to right.
     {
         min_w => 100,       # Minimum column width.
-        justify => 'right', # One of left|right ,
+        max_w => 150,       # Maximum column width.
+        justify => 'right', # One of left|center|right ,
         font => $pdf->corefont("Times", -encoding => "latin1"),
         font_size => 10,
         font_color=> 'blue',
@@ -995,7 +1032,7 @@ Desislav Kamenov
 
 =head1 VERSION
 
-0.9.3
+0.9.4
 
 =head1 COPYRIGHT AND LICENSE
 
