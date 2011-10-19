@@ -1,5 +1,13 @@
 Revision history for Perl extension PDF::Table.
 
+Version 0.9.5 - 18.Oct.2011
+----------------------------
+MANIFEST was missing sample pdf file.
+
+Accidently left alternative code for infinite loop fix commented out.
+Fixed.  Added a test for that.
+
+
 Version 0.9.4 - 17.Oct.2011
 ----------------------------
 Don't bump row count when row spans a page.  Closes #67401.

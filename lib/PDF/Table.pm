@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 use Carp;
-our $VERSION = '0.9.4';
+our $VERSION = '0.9.5';
 
 
 ############################################################
@@ -353,7 +353,7 @@ sub table
 				}
 
 				# This should fix a bug with very long word like serial numbers etc.
-				#$row->[$j] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g if ($max_word_len > 0);
+				$row->[$j] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g if ($max_word_len > 0);
 
 				$space_w 				= $txt->advancewidth( "\x20" );
 				$column_widths->[$j] 	= 0;
@@ -1032,7 +1032,7 @@ Desislav Kamenov
 
 =head1 VERSION
 
-0.9.4
+0.9.5
 
 =head1 COPYRIGHT AND LICENSE
 

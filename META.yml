@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                PDF-Table
-version:             0.9.4
+version:             0.9.5
 abstract:            A utility class for building table layouts in a PDF::API2 object.
 license:             ~
 author:              

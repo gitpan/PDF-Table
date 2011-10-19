@@ -1,4 +1,4 @@
-use Test::More tests => 10;
+use Test::More tests => 11;
 use strict;
 
 BEGIN {
@@ -115,12 +115,14 @@ ok(!$pdf->match(
       [ 'one', 'two' ],
       [ 'thr', 'four score and seven years ago our fathers brought forth' ],
       [ 'fiv', 'six' ],
+      [ 'sev', 'abcdefghijklmnopqrstuvwxyz' ],
 );
 $pdf = PDF::API2->new;
 $page = $pdf->page;
 $tab->table($pdf, $page, [@data], @required,
       border => 0,
       font_size => 12,
+      max_word_length => 13,
       cell_props => [
             [],
             [ { background_color => 'blue' }, {} ],
@@ -135,6 +137,10 @@ ok($pdf->match(
       [[qw(rect 10 688 20 12)],[qw(fillcolor blue)]],
       [[qw(translate 10 688)],[qw(text -)]],
 ), 'keep cell_props values when row spans a page');
+
+ok($pdf->match(
+      [['text', 'abcdefghijklm nopqrstuvwxyz']],
+), 'break long words on max_word_length');
 
 # use this to craft new tests
 #
