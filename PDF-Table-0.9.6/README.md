@@ -1,10 +1,18 @@
-PDF-Table version 0.9.5
+PDF-Table
+=========
+
+Official repo for PDF::Table module collaboration.
+
+https://github.com/kamenov/PDF-Table.git
+
+Any patches, pull requests and feedback are more than welcome.
+
 =======================
 SOME NOTES
 
 This module is intended for table generation using PDF::API2
-The current version is RC1 and I will apreciate any feedback.
-Developed and tested on i586 Linux SuSE 10.0 and perl, v5.8.7 built for i586-linux-thread-multi
+The current version is RC1 and I will appreciate any feedback.
+Developed and tested on i586 Linux SuSE 10.0 and Perl, v5.8.7 built for i586-linux-thread-multi
 
 CHANGES
 
@@ -14,6 +22,7 @@ See the ChangeLog file or make a diff from the tools menu in CPAN
 CONTACTS 
 
 See http://search.cpan.org/~jbazik/
+
 See http://search.cpan.org/~omega/
 
 INSTALLATION
@@ -33,7 +42,7 @@ This module requires these other modules and libraries:
 
 COPYRIGHT AND LICENCE
 
-Put the correct copyright and licence information here.
+Put the correct copyright and license information here.
 
 Copyright (C) 2006 by Daemmon Hughes
 

@@ -1,5 +1,21 @@
 Revision history for Perl extension PDF::Table.
 
+Version 0.9.6
+----------------------------
+Fixed typo in POD. Closes #71816
+Thanks to Gregor Herrmann
+
+Small code refactoring.
+
+Added patch for infinite loop fix. Closes #77376
+Thanks to John Bazik
+
+Added patch for header justification. Closes #77566
+Thanks to James Lance
+
+Added horizontal_borders, vertical_borders params to table(). Closes #79883
+Thanks to Eric Johnson
+
 Version 0.9.5 - 18.Oct.2011
 ----------------------------
 MANIFEST was missing sample pdf file.
