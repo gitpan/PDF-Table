@@ -7,3 +7,4 @@ MANIFEST
 README
 README.md
 t/PDF-Table.t
+META.yml                                 Module meta-data (added by MakeMaker)
